@@ -40,6 +40,21 @@ var (
 // were 40 characters long and only contained the characters a-f and 0-9.
 var oldPatternRegexp = regexp.MustCompile(`\A[a-f0-9]{40}\z`)
 
+// ParseBearerToken validates and classifies a raw GitHub token string (no "Bearer " prefix).
+// It mirrors the logic in ParseAuthorizationHeader and is used when the token is sourced
+// from places other than the Authorization header (e.g. the ?token= query parameter).
+func ParseBearerToken(raw string) (TokenType, string, error) {
+	for prefix, tt := range supportedGitHubPrefixes {
+		if strings.HasPrefix(raw, prefix) {
+			return tt, raw, nil
+		}
+	}
+	if oldPatternRegexp.MatchString(raw) {
+		return TokenTypePersonalAccessToken, raw, nil
+	}
+	return 0, "", ErrBadAuthorizationHeader
+}
+
 // ParseAuthorizationHeader parses the Authorization header from the HTTP request
 func ParseAuthorizationHeader(req *http.Request) (tokenType TokenType, token string, _ error) {
 	authHeader := req.Header.Get(httpheaders.AuthorizationHeader)
