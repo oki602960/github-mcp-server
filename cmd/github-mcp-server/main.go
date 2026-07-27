@@ -303,6 +303,12 @@ func initConfig() {
 	viper.SetEnvPrefix("github")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
+
+	// Honour the unprefixed PORT env var set by Render, Railway, Fly.io, etc.
+	// Only applied when the port has not been set by flag or GITHUB_PORT.
+	if p := os.Getenv("PORT"); p != "" && !viper.IsSet("port") {
+		viper.Set("port", p)
+	}
 }
 
 func main() {

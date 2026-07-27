@@ -49,4 +49,7 @@ EXPOSE 8082
 # Set the entrypoint to the server binary
 ENTRYPOINT ["/server/github-mcp-server"]
 # Default arguments for ENTRYPOINT
-CMD ["stdio"]
+# Use HTTP mode so no server-side token is required at startup.
+# Clients authenticate per-request via Authorization header or ?token= query param.
+# PORT env var (set by Render/Railway/Fly.io) is honoured automatically via Go code.
+CMD ["http"]
